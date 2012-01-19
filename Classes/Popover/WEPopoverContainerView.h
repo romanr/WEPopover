@@ -52,8 +52,7 @@
  * @brief Container/background view for displaying a popover view.
  */
 @interface WEPopoverContainerView : UIView {
-	UIImage *bgImage;
-	UIImage *arrowImage;
+    CGPathRef outerPath;
 	
 	WEPopoverContainerViewProperties *properties;
 	
