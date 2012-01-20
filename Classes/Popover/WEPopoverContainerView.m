@@ -103,7 +103,7 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
         drawLinearGradient(context, CGRectMake(outerRect.origin.x, outerRect.origin.y, outerRect.size.width, outerRect.size.height/3), highlightStart.CGColor, highlightStop.CGColor);
         CGContextRestoreGState(context);
         
-        drawCurvedGradient(context, outerRect, highlightStart.CGColor, highlightStop.CGColor, 180);
+        drawLinearGradient(context, outerRect, highlightStart.CGColor, highlightStop.CGColor);
         CFRelease(highlightPath);  
     }
     
