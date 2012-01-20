@@ -13,11 +13,6 @@
  */
 @interface WEPopoverContainerViewProperties : NSObject
 {
-	NSString *bgImageName;
-	NSString *upArrowImageName;
-	NSString *downArrowImageName;
-	NSString *leftArrowImageName;
-	NSString *rightArrowImageName;
 	CGFloat leftBgMargin;
 	CGFloat rightBgMargin;
 	CGFloat topBgMargin;
@@ -27,11 +22,6 @@
 	CGFloat arrowMargin;
 }
 
-@property(nonatomic, retain) NSString *bgImageName;
-@property(nonatomic, retain) NSString *upArrowImageName;
-@property(nonatomic, retain) NSString *downArrowImageName;
-@property(nonatomic, retain) NSString *leftArrowImageName;
-@property(nonatomic, retain) NSString *rightArrowImageName;
 @property(nonatomic, assign) CGFloat leftBgMargin;
 @property(nonatomic, assign) CGFloat rightBgMargin;
 @property(nonatomic, assign) CGFloat topBgMargin;
