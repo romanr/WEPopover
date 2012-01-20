@@ -1,9 +1,9 @@
 //
 //  Common.h
-//  EyeCandyFramework
+//  CoolTable
 //
-//  Created by Juan Pedro Gonzalez Gutierrez on 16/01/12.
-//  Copyright (c) 2012 JPG-Consulting. All rights reserved.
+//  Created by Ray Wenderlich on 9/29/10.
+//  Copyright 2010 Ray Wenderlich. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
