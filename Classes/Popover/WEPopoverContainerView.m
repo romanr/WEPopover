@@ -83,7 +83,7 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
     
     //CGFloat outerMargin = 7.5f;
     CGFloat outerMargin = 0.5;
-    CGRect outerRect = CGRectInset(self->bgRect, outerMargin, outerMargin);
+    CGRect outerRect = CGRectInset(self->bodyRect, outerMargin, outerMargin);
     
     // create graphics context
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -97,19 +97,23 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
 	CGContextRestoreGState(context);
     
     // Inner
-    CGRect highlightRect = CGRectInset(outerRect, 1.0f, 1.0f);
-    CGMutablePathRef highlightPath = createRoundedRectForRect(highlightRect, 6.0);
+   
+    if (!CGRectEqualToRect(self->bodyRect, CGRectZero)) {
+        CGRect highlightRect = CGRectInset(outerRect, 1.0f, 1.0f);
+        CGMutablePathRef highlightPath = createRoundedRectForRect(highlightRect, 6.0);
+        
+        CGContextSaveGState(context);
+        CGContextAddPath(context, outerPath);
+        CGContextAddPath(context, highlightPath);
+        CGContextEOClip(context);
+        
+        drawLinearGradient(context, CGRectMake(outerRect.origin.x, outerRect.origin.y, outerRect.size.width, outerRect.size.height/3), highlightStart.CGColor, highlightStop.CGColor);
+        CGContextRestoreGState(context);
+        
+        drawCurvedGradient(context, outerRect, highlightStart.CGColor, highlightStop.CGColor, 180);
+        CFRelease(highlightPath);  
+    }
     
-    CGContextSaveGState(context);
-    CGContextAddPath(context, outerPath);
-    CGContextAddPath(context, highlightPath);
-    CGContextEOClip(context);
-    
-    drawLinearGradient(context, CGRectMake(outerRect.origin.x, outerRect.origin.y, outerRect.size.width, outerRect.size.height/3), highlightStart.CGColor, highlightStop.CGColor);
-    CGContextRestoreGState(context);
-    
-    drawCurvedGradient(context, outerRect, highlightStart.CGColor, highlightStop.CGColor, 180);
-    CFRelease(highlightPath);
     
     // Stroke outer path
     CGContextSaveGState(context);
@@ -173,6 +177,66 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
 	arrowOffset = CGPointMake(MAX(0, -arrowRect.origin.x), MAX(0, -arrowRect.origin.y));
 	bgRect = CGRectOffset(bgRect, arrowOffset.x, arrowOffset.y);
 	arrowRect = CGRectOffset(arrowRect, arrowOffset.x, arrowOffset.y);
+
+    /// Create the path
+    CGMutablePathRef outPath = CGPathCreateMutable();
+    
+    switch (arrowDirection) {
+		case UIPopoverArrowDirectionUp:
+            self->bodyRect = CGRectMake(0.0, self->arrowRect.origin.y + self->arrowRect.size.height, theFrame.size.width, theFrame.size.height - (self->arrowRect.origin.y + self->arrowRect.size.height));
+            
+			CGPathMoveToPoint(outPath, nil, arrowRect.origin.x, arrowRect.origin.y + arrowRect.size.height);
+            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + (arrowRect.size.width / 2.0), arrowRect.origin.y);
+            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + arrowRect.size.width, arrowRect.origin.y + arrowRect.size.height);
+            
+            // Top-Right arc
+            CGPathAddArc(outPath, nil, theFrame.size.width - kWEPopoverCornerRadius, arrowRect.origin.y + arrowRect.size.height + kWEPopoverCornerRadius, kWEPopoverCornerRadius, 3.0f*M_PI/2.0f, 0.0, 0.0);
+            // Bottom-Right arc
+            CGPathAddArc(outPath, nil, theFrame.size.width - kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - kWEPopoverCornerRadius, kWEPopoverCornerRadius, 0.0f, M_PI/2.0f, 0);
+            // Bottom-Left arc
+            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI/2.0f, M_PI, 0);
+            // Top-Left arc
+            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, arrowRect.origin.y + arrowRect.size.height + kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI, 3.0f*M_PI/2.0f, 0);
+			break;
+		case UIPopoverArrowDirectionDown:
+            self->bodyRect = CGRectMake(0.0, 0.0, theFrame.size.width, self->arrowRect.origin.y);
+            
+			CGPathMoveToPoint(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect));
+            
+            // Top-Right arc
+            CGPathAddArc(outPath, nil, theFrame.size.width - kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect) + kWEPopoverCornerRadius, kWEPopoverCornerRadius, 3.0f*M_PI/2.0f, 0.0, 0.0);
+            // Bottom-Right arc
+            CGPathAddArc(outPath, nil, theFrame.size.width - kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - (kWEPopoverCornerRadius + arrowRect.size.height), kWEPopoverCornerRadius, 0.0f, M_PI/2.0f, 0);
+            
+            // Draw arrow
+            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + arrowRect.size.width, arrowRect.origin.y);
+            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + (arrowRect.size.width /2.0), arrowRect.origin.y + arrowRect.size.height);
+            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x, arrowRect.origin.y);
+            
+            // Bottom-Left arc
+            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - (kWEPopoverCornerRadius + arrowRect.size.height), kWEPopoverCornerRadius, M_PI/2.0f, M_PI, 0);
+            // Top-Left arc
+            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect) + kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI, 3.0f*M_PI/2.0f, 0);
+            
+			break;
+		case UIPopoverArrowDirectionLeft:
+			//arrowImage = [leftArrowImage retain];
+			break;
+		case UIPopoverArrowDirectionRight:
+			//arrowImage = [rightArrowImage retain];
+			break;
+	}
+    
+    // close the path
+    CGPathCloseSubpath(outPath);
+    
+    // Create the outer path
+    if (!self->outerPath) {
+        CGPathRelease(self->outerPath);
+    }
+    self->outerPath = CGPathRetain(outPath);
+    CGPathRelease(outPath);
+    /// Path end
 	
 	self.frame = theFrame;	
 }																		 
@@ -205,6 +269,7 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
 	bgRect = CGRectZero;
 	arrowRect = CGRectZero;
 	arrowDirection = UIPopoverArrowDirectionUnknown;
+    bodyRect = CGRectZero;
 	
 	CGFloat biggestSurface = 0.0f;
 	CGFloat currentMinMargin = 0.0f;
@@ -389,60 +454,6 @@ permittedArrowDirections:(UIPopoverArrowDirection)permittedArrowDirections
 		
 		theArrowDirection <<= 1;
 	}
-    
-    CGMutablePathRef outPath = CGPathCreateMutable();
-    
-    switch (arrowDirection) {
-		case UIPopoverArrowDirectionUp:
-			CGPathMoveToPoint(outPath, nil, arrowRect.origin.x, arrowRect.origin.y + arrowRect.size.height);
-            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + (arrowRect.size.width / 2.0), arrowRect.origin.y);
-            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + arrowRect.size.width, arrowRect.origin.y + arrowRect.size.height);
-            
-            // Top-Right arc
-            CGPathAddArc(outPath, nil, theSize.width - kWEPopoverCornerRadius, arrowRect.origin.y + arrowRect.size.height + kWEPopoverCornerRadius, kWEPopoverCornerRadius, 3.0f*M_PI/2.0f, 0.0, 0.0);
-            // Bottom-Right arc
-            CGPathAddArc(outPath, nil, theSize.width - kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - kWEPopoverCornerRadius, kWEPopoverCornerRadius, 0.0f, M_PI/2.0f, 0);
-            // Bottom-Left arc
-            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI/2.0f, M_PI, 0);
-            // Top-Left arc
-            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, arrowRect.origin.y + arrowRect.size.height + kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI, 3.0f*M_PI/2.0f, 0);
-			break;
-		case UIPopoverArrowDirectionDown:
-			CGPathMoveToPoint(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect));
-            
-            // Top-Right arc
-            CGPathAddArc(outPath, nil, theSize.width - kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect) + kWEPopoverCornerRadius, kWEPopoverCornerRadius, 3.0f*M_PI/2.0f, 0.0, 0.0);
-            // Bottom-Right arc
-            CGPathAddArc(outPath, nil, theSize.width - kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - (kWEPopoverCornerRadius + arrowRect.size.height), kWEPopoverCornerRadius, 0.0f, M_PI/2.0f, 0);
-            
-            // Draw arrow
-            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + arrowRect.size.width, arrowRect.origin.y);
-            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x + (arrowRect.size.width /2.0), arrowRect.origin.y + arrowRect.size.height);
-            CGPathAddLineToPoint(outPath, nil, arrowRect.origin.x, arrowRect.origin.y);
-            
-            // Bottom-Left arc
-            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMaxY(self->bgRect) - (kWEPopoverCornerRadius + arrowRect.size.height), kWEPopoverCornerRadius, M_PI/2.0f, M_PI, 0);
-            // Top-Left arc
-            CGPathAddArc(outPath, nil, CGRectGetMinX(self->bgRect) + kWEPopoverCornerRadius, CGRectGetMinY(self->bgRect) + kWEPopoverCornerRadius, kWEPopoverCornerRadius, M_PI, 3.0f*M_PI/2.0f, 0);
-            
-			break;
-		case UIPopoverArrowDirectionLeft:
-			//arrowImage = [leftArrowImage retain];
-			break;
-		case UIPopoverArrowDirectionRight:
-			//arrowImage = [rightArrowImage retain];
-			break;
-	}
-    
-    // close the path
-    CGPathCloseSubpath(outPath);
-    
-    // Create the outer path
-    if (!self->outerPath) {
-        CGPathRelease(self->outerPath);
-    }
-    self->outerPath = CGPathRetain(outPath);
-    CGPathRelease(outPath);
 }
 
 @end

@@ -59,6 +59,7 @@
 	UIPopoverArrowDirection arrowDirection;
 	
 	CGRect arrowRect;
+    CGRect bodyRect;
 	CGRect bgRect;
 	CGPoint offset;
 	CGPoint arrowOffset;
