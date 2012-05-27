@@ -124,7 +124,8 @@
 	[self dismissPopoverAnimated:NO];
 	
 	//First force a load view for the contentViewController so the popoverContentSize is properly initialized
-	contentViewController.view;
+	UIView *v = contentViewController.view;
+	[v layoutIfNeeded];
 	
 	if (CGSizeEqualToSize(popoverContentSize, CGSizeZero)) {
 		popoverContentSize = contentViewController.contentSizeForViewInPopover;
