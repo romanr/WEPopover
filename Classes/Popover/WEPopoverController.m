@@ -105,6 +105,15 @@
 	[self dismissPopoverAnimated:animated userInitiated:NO];
 }
 
+- (void)presentPopoverFromView:(UIView *)_view 
+			   permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections 
+							   animated:(BOOL)animated {
+	CGRect relativeOrigin = [self.view.superview convertRect:_view.frame toView:self.view];
+	
+	
+	return [self presentPopoverFromRect:relativeOrigin inView:self.view.superview permittedArrowDirections:arrowDirections animated:animated];
+}
+
 - (void)presentPopoverFromBarButtonItem:(UIBarButtonItem *)item 
 			   permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections 
 							   animated:(BOOL)animated {
